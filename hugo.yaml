@@ -1,4 +1,4 @@
-baseURL: https://example.org/
+baseURL: "https://rechem.github.io/"
 languageCode: en-us
 title: Redouane Chadouli's Personal Blog
 theme: PaperMod
