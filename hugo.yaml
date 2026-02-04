@@ -1,0 +1,54 @@
+baseURL: https://example.org/
+languageCode: en-us
+title: Redouane Chadouli's Personal Blog
+theme: PaperMod
+
+params:
+  defaultTheme: auto
+  homeInfoParams:
+    Title: "Welcome!🤗"
+    Content: >-
+      My name is Redouane and I'm a Software Engineer specializing in Backend Engineering and Infrastructure. This is my personal site where I share my knowledge, projects, and experiences throughout my learning journey.
+  socialIcons:
+    - name: cv
+      url: "/Resume_Chadouli.pdf"
+    - name: linkedin
+      url: 'https://www.linkedin.com/in/redouane-meg-chadouli/'
+    - name: github
+      url: 'https://github.com/Rechem'
+    - name: email
+      url: 'mailto:chadouliredouanemeg@gmail.com'
+
+  # Show post word count and read time
+  ShowWordCount: true
+  ShowReadingTime: true
+
+  # Show tags at the bottom of posts
+  ShowPostNavLinks: true
+  ShowBreadCrumbs: true
+  ShowCodeCopyButtons: true
+
+
+
+menu:
+  main:
+  - identifier: home
+    name: Home
+    url: /
+    weight: 10
+  - identifier: posts
+    name: Blog
+    url: /posts/
+    weight: 20
+  - identifier: search
+    name: Search
+    url: /search/
+    weight: 30
+  - identifier: archives
+    name: Archives
+    url: /archives/
+    weight: 40
+  - identifier: tags
+    name: Tags
+    url: /tags/
+    weight: 40

@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en" dir="auto" data-theme="auto">
+
+<head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="noindex, nofollow">
+<title>Global variables are killing your code quality | Redouane Chadouli&#39;s Personal Blog</title>
+<meta name="keywords" content="design patterns, testing, code smell">
+<meta name="description" content="Global variables seem convenient until they&#39;re not. I this post, I talk about the issues that arise when using global variables and how to solve them using dependency injection with practical examples.">
+<meta name="author" content="">
+<link rel="canonical" href="http://localhost:1313/posts/global-variables/">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.da3211e5ef867bf2b75fd5a6515cfed7195c011e8ab735694e203810a827097b.css" integrity="sha256-2jIR5e&#43;Ge/K3X9WmUVz&#43;1xlcAR6KtzVpTiA4EKgnCXs=" rel="preload stylesheet" as="style">
+<link rel="icon" href="http://localhost:1313/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="http://localhost:1313/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="http://localhost:1313/favicon-32x32.png">
+<link rel="apple-touch-icon" href="http://localhost:1313/apple-touch-icon.png">
+<link rel="mask-icon" href="http://localhost:1313/safari-pinned-tab.svg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<link rel="alternate" hreflang="en" href="http://localhost:1313/posts/global-variables/">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+    <style>
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --theme: rgb(29, 30, 32);
+                --entry: rgb(46, 46, 51);
+                --primary: rgb(218, 218, 219);
+                --secondary: rgb(155, 156, 157);
+                --tertiary: rgb(65, 66, 68);
+                --content: rgb(196, 196, 197);
+                --code-block-bg: rgb(46, 46, 51);
+                --code-bg: rgb(55, 56, 62);
+                --border: rgb(51, 51, 51);
+                color-scheme: dark;
+            }
+
+            .list {
+                background: var(--theme);
+            }
+
+            .toc {
+                background: var(--entry);
+            }
+        }
+
+        @media (prefers-color-scheme: light) {
+            .list::-webkit-scrollbar-thumb {
+                border-color: var(--code-bg);
+            }
+        }
+
+    </style>
+</noscript>
+<script>
+    if (localStorage.getItem("pref-theme") === "dark") {
+        document.querySelector("html").dataset.theme = 'dark';
+    } else if (localStorage.getItem("pref-theme") === "light") {
+       document.querySelector("html").dataset.theme = 'light';
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.querySelector("html").dataset.theme = 'dark';
+    } else {
+        document.querySelector("html").dataset.theme = 'light';
+    }
+
+</script>
+</head>
+<body id="top">
+    <header class="header">
+    <nav class="nav">
+        <div class="logo">
+            <a href="http://localhost:1313/" accesskey="h" title="Redouane Chadouli&#39;s Personal Blog (Alt + H)">Redouane Chadouli&#39;s Personal Blog</a>
+            <div class="logo-switches">
+                <button id="theme-toggle" accesskey="t" title="(Alt + T)" aria-label="Toggle theme">
+                    <svg id="moon" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg id="sun" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <ul id="menu">
+            <li>
+                <a href="http://localhost:1313/" title="Home">
+                    <span>Home</span>
+                </a>
+            </li>
+            <li>
+                <a href="http://localhost:1313/posts/" title="Blog">
+                    <span>Blog</span>
+                </a>
+            </li>
+            <li>
+                <a href="http://localhost:1313/search/" title="Search">
+                    <span>Search</span>
+                </a>
+            </li>
+            <li>
+                <a href="http://localhost:1313/archives/" title="Archives">
+                    <span>Archives</span>
+                </a>
+            </li>
+            <li>
+                <a href="http://localhost:1313/tags/" title="Tags">
+                    <span>Tags</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</header>
+<main class="main">
+
+<article class="post-single">
+  <header class="post-header">
+    <div class="breadcrumbs"><a href="http://localhost:1313/">Home</a>&nbsp;»&nbsp;<a href="http://localhost:1313/posts/">Posts</a></div>
+    <h1 class="post-title entry-hint-parent">
+      Global variables are killing your code quality
+    </h1>
+    <div class="post-description">
+      Global variables seem convenient until they&#39;re not. I this post, I talk about the issues that arise when using global variables and how to solve them using dependency injection with practical examples.
+    </div>
+    <div class="post-meta"><span title='2026-02-04 12:00:00 +0000 +0000'>February 4, 2026</span>&nbsp;·&nbsp;<span>6 min</span>&nbsp;·&nbsp;<span>1112 words</span>
+
+</div>
+  </header> 
+  <div class="post-content"><h2 id="introduction">Introduction<a hidden class="anchor" aria-hidden="true" href="#introduction">#</a></h2>
+<p>Whether you are a student working on your assignment, or an office clerk writing code for a living, you are tasked with building your next backend application.
+Your fingers start rushing over the keyboard, your code base starts growing, and your brain reaches flow state. You start writing your services, define schemas, perform validation and wiring, and then it&rsquo;s time to add a database client. Where do you instantiate it, and how do you use it?</p>
+<p>If you were like me, I used to do something like this:</p>
+<ul>
+<li>Create a file for the database client e.g. Prisma: <code>src/util/prisma_client.ts</code></li>
+<li>Instantiate and export the client instance: <code>export const prismaClientSingleton = new PrismaClient();</code></li>
+<li>Reuse it everywhere</li>
+</ul>
+<p>You can actually find this exact code of mine in my <a href="https://github.com/Rechem/fdaBackend/tree/main">fdaBackend</a> project repository. This was part of an assignment for a food delivery app.</p>
+<blockquote>
+<p>Credits to me for calling it <em>Singleton</em> and using it only in the repository layer right? 🤣</p>
+</blockquote>
+<h1 id="the-problem">The problem<a hidden class="anchor" aria-hidden="true" href="#the-problem">#</a></h1>
+<p>While this looks okay on the surface and certainly works, global variable pattern is a code smell and has several issues.</p>
+<h2 id="1-hidden-dependency">1. Hidden dependency<a hidden class="anchor" aria-hidden="true" href="#1-hidden-dependency">#</a></h2>
+<p>When you&rsquo;re writing code, it must only use explicit dependencies, namely, its arguments and class attributes. This way it stays clean and maintainable, and whenever it&rsquo;s someone else&rsquo;s turn to maintain it or test it, they won&rsquo;t run into unpleasant surprises, like a hidden dependency on a global variable burried deep within the implementation. There are very few exceptions to this rule which include loggers and validators.</p>
+<h2 id="2-testability">2. Testability<a hidden class="anchor" aria-hidden="true" href="#2-testability">#</a></h2>
+<p>Global variables break testing entirely. When you write tests for your application (I know you don&rsquo;t), each test must be isolated and independent from the others. Whenever our subject function uses external clients, we create mocks to simulate their behavior during testing - There is also another approach using Test Containers but that will be a topic for another blog.</p>
+<p>Using mocks allows our tests to run even without an actual client, whereas when you import the client as a global variable, you have essentially turned your unit tests into integration tests. Let me break it down:</p>
+<p>Let&rsquo;s say you have this function</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-ts" data-lang="ts"><span style="display:flex;"><span><span style="color:#66d9ef">import</span> { <span style="color:#a6e22e">prismaClientSingleton</span> } <span style="color:#66d9ef">from</span> <span style="color:#e6db74">&#39;../util/prisma_client&#39;</span>;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">export</span> <span style="color:#66d9ef">default</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">UserRepository</span>{
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">public</span> <span style="color:#66d9ef">static</span> <span style="color:#a6e22e">getUserById</span>(<span style="color:#a6e22e">id</span>: <span style="color:#66d9ef">string</span>)<span style="color:#f92672">:</span> <span style="color:#a6e22e">Promise</span>&lt;<span style="color:#f92672">User</span> <span style="color:#960050;background-color:#1e0010">|</span> <span style="color:#a6e22e">null</span>&gt; {
+</span></span><span style="display:flex;"><span>		<span style="color:#66d9ef">return</span> <span style="color:#66d9ef">await</span> <span style="color:#a6e22e">prismaClientSingleton</span>.<span style="color:#a6e22e">user</span>.<span style="color:#a6e22e">findUnique</span>({
+</span></span><span style="display:flex;"><span>			<span style="color:#a6e22e">where</span><span style="color:#f92672">:</span> { <span style="color:#a6e22e">id</span> }
+</span></span><span style="display:flex;"><span>		});
+</span></span><span style="display:flex;"><span>	}
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>When you try to test this function, you can&rsquo;t easily mock the Prisma client because it&rsquo;s imported directly. You have to either use the real database connection (making it an integration test) or resort to hacky solutions like module mocking, which adds a lot of complexity. Your test becomes dependent on the global state, and if multiple tests run concurrently, they might interfere with each other.
+Also notice how I use static methods to avoid instantiating objects, another code smell.</p>
+<h2 id="3-increased-coupling">3. Increased coupling<a hidden class="anchor" aria-hidden="true" href="#3-increased-coupling">#</a></h2>
+<p>Global variables create tight coupling between your code and specific implementations. Your business logic becomes directly tied to a particular database client, that&rsquo;s used everywhere in your code. If you want to swap the client and use another ORM, good luck refactoring your entire code base. Every file that imports that global variable is now coupled to that specific implementation, which will cost you hours and headaches to refactor.</p>
+<h1 id="the-solution">The solution<a hidden class="anchor" aria-hidden="true" href="#the-solution">#</a></h1>
+<p>The solution is very simple, don&rsquo;t use global variables. It&rsquo;s easier than you might think. whenever you need an external dependency like a database client, pass it as a parameter or inject it through a constructor.</p>
+<h2 id="dependency-injection">Dependency Injection<a hidden class="anchor" aria-hidden="true" href="#dependency-injection">#</a></h2>
+<p>The principle is simple, if you need an external dependency, inject it. Do not summon global instances inside your code. if you need a dependency, find a way to inject it.
+Here&rsquo;s how we can refactor the previous code:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-ts" data-lang="ts"><span style="display:flex;"><span><span style="color:#66d9ef">import</span> { <span style="color:#a6e22e">PrismaClient</span> } <span style="color:#66d9ef">from</span> <span style="color:#e6db74">&#39;@prisma/client&#39;</span>;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">export</span> <span style="color:#66d9ef">default</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">UserRepository</span> {
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">constructor</span>(<span style="color:#66d9ef">private</span> <span style="color:#a6e22e">prisma</span>: <span style="color:#66d9ef">PrismaClient</span>) {}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">public</span> <span style="color:#a6e22e">getUserById</span>(<span style="color:#a6e22e">id</span>: <span style="color:#66d9ef">string</span>)<span style="color:#f92672">:</span> <span style="color:#a6e22e">Promise</span>&lt;<span style="color:#f92672">User</span> <span style="color:#960050;background-color:#1e0010">|</span> <span style="color:#a6e22e">null</span>&gt; {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">await</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">prisma</span>.<span style="color:#a6e22e">user</span>.<span style="color:#a6e22e">findUnique</span>({
+</span></span><span style="display:flex;"><span>      <span style="color:#a6e22e">where</span><span style="color:#f92672">:</span> { <span style="color:#a6e22e">id</span> }
+</span></span><span style="display:flex;"><span>    });
+</span></span><span style="display:flex;"><span>  }
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>Here, we inject the dependency through the class constructor. Anyone reading this code immediately sees that <code>UserRepository</code> needs a <code>PrismaClient</code> to work. Testing also becomes trivial:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-ts" data-lang="ts"><span style="display:flex;"><span><span style="color:#66d9ef">import</span> { <span style="color:#a6e22e">UserRepository</span> } <span style="color:#66d9ef">from</span> <span style="color:#e6db74">&#39;./UserRepository&#39;</span>;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">describe</span>(<span style="color:#e6db74">&#39;UserRepository&#39;</span>, () <span style="color:#f92672">=&gt;</span> {
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">it</span>(<span style="color:#e6db74">&#39;should get user by id&#39;</span>, <span style="color:#66d9ef">async</span> () <span style="color:#f92672">=&gt;</span> {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">mockPrisma</span> <span style="color:#f92672">=</span> {
+</span></span><span style="display:flex;"><span>      <span style="color:#a6e22e">user</span><span style="color:#f92672">:</span> {
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">findUnique</span>: <span style="color:#66d9ef">jest.fn</span>().<span style="color:#a6e22e">mockResolvedValue</span>({ <span style="color:#a6e22e">id</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;1&#39;</span>, <span style="color:#a6e22e">name</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;John&#39;</span> })
+</span></span><span style="display:flex;"><span>      }
+</span></span><span style="display:flex;"><span>    } <span style="color:#66d9ef">as</span> <span style="color:#66d9ef">any</span>;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">repo</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> <span style="color:#a6e22e">UserRepository</span>(<span style="color:#a6e22e">mockPrisma</span>);
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">user</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">await</span> <span style="color:#a6e22e">repo</span>.<span style="color:#a6e22e">getUserById</span>(<span style="color:#e6db74">&#39;1&#39;</span>);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">expect</span>(<span style="color:#a6e22e">user</span>).<span style="color:#a6e22e">toEqual</span>({ <span style="color:#a6e22e">id</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;1&#39;</span>, <span style="color:#a6e22e">name</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;John&#39;</span> });
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">expect</span>(<span style="color:#a6e22e">mockPrisma</span>.<span style="color:#a6e22e">user</span>.<span style="color:#a6e22e">findUnique</span>).<span style="color:#a6e22e">toHaveBeenCalledWith</span>({
+</span></span><span style="display:flex;"><span>      <span style="color:#a6e22e">where</span><span style="color:#f92672">:</span> { <span style="color:#a6e22e">id</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;1&#39;</span> }
+</span></span><span style="display:flex;"><span>    });
+</span></span><span style="display:flex;"><span>  });
+</span></span><span style="display:flex;"><span>});
+</span></span></code></pre></div><p>Look at this beautiful, clean, testable code. At first glance it may look like we added a lot more code just to make it testable, and if you&rsquo;re the only person working on a one-time project for an assignment, I wouldn&rsquo;t expect you to even think of testing your code. But if you work in a collaborative environment and your code will be deployed in production, the last thing you want is your users testing your code. Moreover this example is oversimplified, in reality your functions will do a lot more work and writing tests for them becomes crucial.</p>
+<p>Thanks to dependency injection, we were able to solve all 3 of our problems:</p>
+<ul>
+<li>There are no hidden dependencies, each function uses explicit dependencies injected through the constructor or passed down as arguments.</li>
+<li>The code is now testable.</li>
+<li>And is loosely coupled. If we ever need to swap Prisma for another ORM, there is only one place to edit the code.</li>
+</ul>
+<h2 id="what-about-the-actual-client-instantiation">What about the actual client instantiation?<a hidden class="anchor" aria-hidden="true" href="#what-about-the-actual-client-instantiation">#</a></h2>
+<p>In practice, you still need to instantiate your database client and use it. The key is to instantiate it at your application&rsquo;s entrypoint and pass it down through your dependency chain:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-ts" data-lang="ts"><span style="display:flex;"><span><span style="color:#66d9ef">import</span> { <span style="color:#a6e22e">PrismaClient</span> } <span style="color:#66d9ef">from</span> <span style="color:#e6db74">&#39;@prisma/client&#39;</span>;
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">import</span> { <span style="color:#a6e22e">UserRepository</span> } <span style="color:#66d9ef">from</span> <span style="color:#e6db74">&#39;./repositories/UserRepository&#39;</span>;
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">import</span> { <span style="color:#a6e22e">UserService</span> } <span style="color:#66d9ef">from</span> <span style="color:#e6db74">&#39;./services/UserService&#39;</span>;
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">import</span> { <span style="color:#a6e22e">UserController</span> } <span style="color:#66d9ef">from</span> <span style="color:#e6db74">&#39;./controllers/UserController&#39;</span>;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">const</span> <span style="color:#a6e22e">prisma</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> <span style="color:#a6e22e">PrismaClient</span>();
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">const</span> <span style="color:#a6e22e">userRepository</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> <span style="color:#a6e22e">UserRepository</span>(<span style="color:#a6e22e">prisma</span>);
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">const</span> <span style="color:#a6e22e">userService</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> <span style="color:#a6e22e">UserService</span>(<span style="color:#a6e22e">userRepository</span>);
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">const</span> <span style="color:#a6e22e">userController</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> <span style="color:#a6e22e">UserController</span>(<span style="color:#a6e22e">userService</span>);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">// Set up your routes with the controller
+</span></span></span><span style="display:flex;"><span><span style="color:#a6e22e">app</span>.<span style="color:#66d9ef">get</span>(<span style="color:#e6db74">&#39;/users/:id&#39;</span>, (<span style="color:#a6e22e">req</span>, <span style="color:#a6e22e">res</span>) <span style="color:#f92672">=&gt;</span> <span style="color:#a6e22e">userController</span>.<span style="color:#a6e22e">getUser</span>(<span style="color:#a6e22e">req</span>, <span style="color:#a6e22e">res</span>));
+</span></span></code></pre></div><p>Yes, this requires a bit more wiring and object initialization at the start, but the benefits outweigh the initial setup cost. Your code becomes testable, reusable and maintainable.</p>
+<p>For larger applications, you can use <strong>dependency injection containers</strong> such as <a href="https://github.com/microsoft/tsyringe">tsyringe</a>. These containers do the wiring and injection for you so you&rsquo;ll have far less boilerplate code. Some frameworks, like <strong>NestJS</strong>, go even further by providing <strong>built-in automated wiring</strong> out of the box.</p>
+<h1 id="conclusion">Conclusion<a hidden class="anchor" aria-hidden="true" href="#conclusion">#</a></h1>
+<p>Global variables might seem convenient in the moment, but they&rsquo;re technical debt waiting to bite you. By using dependency injection and keeping your dependencies explicit, you write code that&rsquo;s easy to understand, test, and maintain. Your future self (and your colleagues) will thank you.</p>
+<p>Now go and refactor that code base! 😉</p>
+
+
+  </div>
+
+  <footer class="post-footer">
+    <ul class="post-tags">
+      <li><a href="http://localhost:1313/tags/design-patterns/">Design Patterns</a></li>
+      <li><a href="http://localhost:1313/tags/testing/">Testing</a></li>
+      <li><a href="http://localhost:1313/tags/code-smell/">Code Smell</a></li>
+    </ul>
+
+  </footer>
+</article>
+    </main>
+    
+<footer class="footer">
+        <span>&copy; 2026 <a href="http://localhost:1313/">Redouane Chadouli&#39;s Personal Blog</a></span> · 
+
+    <span>
+        Powered by
+        <a href="https://gohugo.io/" rel="noopener noreferrer" target="_blank">Hugo</a> &
+        <a href="https://github.com/adityatelange/hugo-PaperMod/" rel="noopener" target="_blank">PaperMod</a>
+    </span>
+</footer>
+<a href="#top" aria-label="go to top" title="Go to Top (Alt + G)" class="top-link" id="top-link" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 6" fill="currentColor">
+        <path d="M12 6H0l6-6z" />
+    </svg>
+</a>
+
+<script>
+    let menu = document.getElementById('menu');
+    if (menu) {
+        
+        const scrollPosition = localStorage.getItem("menu-scroll-position");
+        if (scrollPosition) {
+            menu.scrollLeft = parseInt(scrollPosition, 10);
+        }
+        
+        menu.onscroll = function () {
+            localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+        }
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView();
+            }
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var mybutton = document.getElementById("top-link");
+    window.onscroll = function () {
+        if (document.body.scrollTop > 800 || document.documentElement.scrollTop > 800) {
+            mybutton.style.visibility = "visible";
+            mybutton.style.opacity = "1";
+        } else {
+            mybutton.style.visibility = "hidden";
+            mybutton.style.opacity = "0";
+        }
+    };
+
+</script>
+<script>
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+        const html = document.querySelector("html");
+        if (html.dataset.theme === "dark") {
+            html.dataset.theme = 'light';
+            localStorage.setItem("pref-theme", 'light');
+        } else {
+            html.dataset.theme = 'dark';
+            localStorage.setItem("pref-theme", 'dark');
+        }
+    })
+
+</script>
+<script>
+    document.querySelectorAll('pre > code').forEach((codeblock) => {
+        const container = codeblock.parentNode.parentNode;
+
+        const copybutton = document.createElement('button');
+        copybutton.classList.add('copy-code');
+        copybutton.innerHTML = 'copy';
+
+        function copyingDone() {
+            copybutton.innerHTML = 'copied!';
+            setTimeout(() => {
+                copybutton.innerHTML = 'copy';
+            }, 2000);
+        }
+
+        copybutton.addEventListener('click', (cb) => {
+            if ('clipboard' in navigator) {
+                navigator.clipboard.writeText(codeblock.textContent);
+                copyingDone();
+                return;
+            }
+
+            const range = document.createRange();
+            range.selectNodeContents(codeblock);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            try {
+                document.execCommand('copy');
+                copyingDone();
+            } catch (e) { };
+            selection.removeRange(range);
+        });
+
+        if (container.classList.contains("highlight")) {
+            container.appendChild(copybutton);
+        } else if (container.parentNode.firstChild == container) {
+            
+        } else if (codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.nodeName == "TABLE") {
+            
+            codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.appendChild(copybutton);
+        } else {
+            
+            codeblock.parentNode.appendChild(copybutton);
+        }
+    });
+</script>
+</body>
+
+</html>
