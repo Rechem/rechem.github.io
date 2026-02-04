@@ -29,6 +29,8 @@ params:
   ShowBreadCrumbs: true
   ShowCodeCopyButtons: true
 
+  ShowSearchButton: false
+
 
 
 menu:
